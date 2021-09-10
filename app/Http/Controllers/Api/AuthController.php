@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Models\User;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Contracts\Validation;
 use Illuminate\Support\Facades\Log;
@@ -62,24 +63,34 @@ class AuthController extends Controller
     public function register(Request  $request){
         Log::info($request); 
         $validar = Validator::make($request->all(),[
-            'name' => 'required|string|max:255',
+            
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
+            'password' => 'required|string|min:8',
         ]);
 
         if($validar->fails()){
             return response()->json($validar->errors()->toJson(),400);
         }
+        try{
+            $user = User::create([
 
-        $user = User::create([
-            'name' => $request->get('name'),
-            'email' => $request->get('email'),
-            'password' => Hash::make($request->get('password')),
-        ]);
+                'email' => $request->get('email'),
+                'password' => Hash::make($request->get('password')),
+            ]);
 
-        $token = JWTAuth::fromUser($user);
+            $token = JWTAuth::fromUser($user);
 
-        return response()->json(compact('user','token'),201);
+            return response()->json(compact('user','token'),201);
+        }catch(Exception $e){
+
+            return response()->json([
+                'success' => false,
+                'message' => ''.$e
+            ]);
+    }
+        
+
+        
 
     }
 
@@ -96,5 +107,28 @@ class AuthController extends Controller
                 'msg' => ''.$e,
             ]);
         }
+    }
+
+    public function saveUserInfo(Request $request){
+        $user = User::find(Auth::user()->id);
+        $user->name = $request->name;
+        $user->apellido = $request->apellido;
+        $foto = '';
+        // Verifica si el usuario proporciona una foto 
+        if($request->foto != ''){
+            // usar el espacio de nombre tiempo para evitar duplicaciones 
+            $foto = time().'.jpg';
+            // decode foto string and save to storage/profiles
+            file_put_contents('storage/perfiles/'.$foto,base64_decode($request->foto));
+            $user->foto = $foto;
+        }
+
+        
+        $user->update();
+
+        return response()->json([
+            'success' => true,
+            'foto' => $foto,
+        ]);
     }
 }

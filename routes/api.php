@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Route;
 Route::post('register', [AuthController::class,'register'])->name('registro');
 Route::post('login', [AuthController::class,'login'])->name('login');
 Route::get('logout',[AuthController::class,'logout'])->name('cerrar_sesion');
+Route::post('save_user_info', [AuthController::class,'saveUserInfo'])->name('info')->middleware('jwtAuth');
 
 
 // Route::resource('posts', PostController::class)->except('show','edit');
@@ -31,6 +32,8 @@ Route::post('posts/create',[PostController::class,'create'])->name('post.create'
 Route::post('posts/delete',[PostController::class,'delete'])->name('post.delete')->middleware('jwtAuth');
 Route::post('posts/update',[PostController::class,'update'])->name('post.update')->middleware('jwtAuth');
 Route::get('posts',[PostController::class,'index'])->name('post.index')->middleware('jwtAuth');
+Route::get('posts/mis_publicaciones',[PostController::class,'myPosts'])->name('post.mi_post')->middleware('jwtAuth');
+
 
 Route::post('comments/create',[CommentsController::class,'create'])->name('comment.create')->middleware('jwtAuth');
 Route::post('comments/delete',[CommentsController::class,'delete'])->name('comment.delete')->middleware('jwtAuth');

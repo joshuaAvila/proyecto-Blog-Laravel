@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Comment;
+use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -15,9 +16,11 @@ class CommentsController extends Controller
         $comment->post_id = $request->id;
         $comment->comentario = $request->comentario;
         $comment->save();
+        $comment->user;
 
         return response()->json([
             'success' => true,
+            'comment' => $comment,
             'message' => 'Comentario Agregado'
         ]);
     }
@@ -44,7 +47,7 @@ class CommentsController extends Controller
     public function delete (Request $request){
         $comment = Comment::find($request->id);
         //Condicioin para validar si el usuario esta editando su propio comentario
-        if($comment->id != Auth::user()->id){
+        if($comment->user_id != Auth::user()->id){
             return response()->json([
                 'success' => false,
                 'message' => 'Acceso denegado'
@@ -60,16 +63,21 @@ class CommentsController extends Controller
     }
 
     public function index(Request $request){
+  
         $comments = Comment::where('post_id',$request->id)->get();
+       
         // Mostrar los comentario de cada usuario
         foreach($comments as $comment){
+        
             $comment->user;
-        }
 
+          
+        }
         return response()->json([
             'success' => true,
             'comentario' => $comments
         ]);
+        
     }
 }
   
